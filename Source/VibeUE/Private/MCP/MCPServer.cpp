@@ -81,17 +81,7 @@ bool FMCPServer::Start()
         return true;
     }
 
-    // Re-validate VibeUE API key each time the server starts (picks up any key changes from settings)
-    ValidateVibeUEApiKeyAsync();
-
-    if (Config.ApiKey.IsEmpty())
-    {
-        UE_LOG(LogMCPServer, Error, TEXT(
-            "SECURITY WARNING: VibeUE MCP server is starting with NO API key set. "
-            "Any local process on this machine can connect and execute tools without authentication "
-            "-- including file access, asset changes, and arbitrary Python code execution inside Unreal Engine. "
-            "Set an API key in Project Settings -> Plugins -> VibeUE -> API Key to restrict access."));
-    }
+    // AOS: Skipped ValidateVibeUEApiKeyAsync() — no phone-home needed
 
     UE_LOG(LogMCPServer, Log, TEXT("Starting MCP Server on port %d..."), Config.Port);
     
@@ -844,19 +834,7 @@ FString FMCPServer::HandleToolsList(TSharedPtr<FJsonObject> Params, const FStrin
 
 FString FMCPServer::HandleToolsCall(TSharedPtr<FJsonObject> Params, const FString& RequestId)
 {
-    // Check VibeUE API key validity before executing any tool
-    if (!bIsVibeUEApiKeyValid)
-    {
-        TSharedPtr<FJsonObject> Result = MakeShared<FJsonObject>();
-        TArray<TSharedPtr<FJsonValue>> ContentArray;
-        TSharedPtr<FJsonObject> ContentItem = MakeShared<FJsonObject>();
-        ContentItem->SetStringField(TEXT("type"), TEXT("text"));
-        ContentItem->SetStringField(TEXT("text"), TEXT("\u274C A valid VibeUE API key is required to use VibeUE MCP tools. Get your free API key at https://www.vibeue.com/login"));
-        ContentArray.Add(MakeShared<FJsonValueObject>(ContentItem));
-        Result->SetArrayField(TEXT("content"), ContentArray);
-        Result->SetBoolField(TEXT("isError"), true);
-        return BuildJsonRpcResponse(RequestId, Result);
-    }
+    // AOS: API key gate removed — all tools run locally, no phone-home needed
 
     if (!Params.IsValid())
     {

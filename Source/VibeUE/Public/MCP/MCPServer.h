@@ -203,7 +203,7 @@ private:
     FMCPHostConfig Config;
     
     /** Whether the VibeUE API key has been validated (checked at startup) */
-    bool bIsVibeUEApiKeyValid = false;
+    bool bIsVibeUEApiKeyValid = true;
     
     /** Whether the server is currently running */
     bool bIsRunning = false;
